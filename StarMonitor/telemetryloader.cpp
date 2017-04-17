@@ -34,20 +34,20 @@ bool telemetryLoader::loadVal(int timeMS, int h, double *val) {
         exit(0);
     }
 
-    if ( !pvFunc(&data, val) ) {
+    if ( !pvFunc(&data, val, req.ms + req.sec * 1000) ) {
         return false;
     }
 
     return true;
 }
 
-tel_pair telemetryLoader::loadVals(int start_time_ms, int end_time_ms, int step) {
+tel_pair telemetryLoader::loadVals(int start_time_ms, int end_time_ms, int step_ms) {
     QVector<double> timeVec;
     QVector<double> valVec;
 
-    for (int i=start_time_ms; i < end_time_ms; i += step) {
+    for (int i=start_time_ms; i < end_time_ms; i += step_ms) {
         double val;
-        if ( loadVal(i, step, &val) ) {
+        if ( loadVal(i, step_ms, &val) ) {
             timeVec.push_back(i);
             valVec.push_back(val);
         }

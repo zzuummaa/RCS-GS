@@ -5,12 +5,49 @@
 #include <chrono>
 #include "telemetryloader.h"
 
-#define count_ 10000
+#define count_ 100
 
 QLoggingCategory redis_category("Redis client");
 
-bool parseFunc(string* data, double* outVal) {
-    *outVal = atof(data->c_str());
+bool parseFunc(string* data, double* outVal, int ms) {
+    *outVal = atoi(data->c_str());
+    return true;
+}
+
+void MainWindow::repaintGraph() {
+    x.push_back(i);
+    y.push_back(i * i);
+    i++;
+
+    ui->plot->graph(0)->setData(x, y);
+    //end of playback check
+    if(x.size() > 100) animationTimer->stop();
+    //
+    ui->plot->replot();
+}
+
+bool filling_db(redisDataService* dserv) {
+    auto begin = chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < count_; i++) {
+        string data = to_string((double)i * i);
+
+        req_s req;
+        req.type = 0;
+        req.sec = i * 2;
+        req.ms = 0;
+
+        if ( !dserv->add(&req, &data) ) {
+            qDebug(redis_category) << "redisDataService add failed";
+            return false;
+        }
+    }
+
+    auto end = chrono::high_resolution_clock::now();
+
+    int diff = chrono::duration_cast<chrono::milliseconds>(end-begin).count();
+    qDebug(redis_category) << "redisDataService add" << count_ << "elements time:" << diff << "ms";
+
     return true;
 }
 
@@ -29,26 +66,18 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug(redis_category) << "redisDataService unable to connect";
     }
 
-    auto begin = chrono::high_resolution_clock::now();
+    /*if ( !filling_db(dserv) ) {
+        exit(1);
+    }*/
 
-    for (int i = 0; i < count_; i++) {
-        string data = to_string((double)i * i);
+    rtLoader = new realTimeTelemetryLoader(dserv);
+    rtLoader->setParseValFunc(&parseFunc);
+    rtLoader->start();
 
-        req_s req;
-        req.type = 0;
-        req.sec = i;
-        req.ms = 0;
+    plott = new telemetryPlot(this, ui->plot);
+    plott->setTelemetryLoader(rtLoader);
+    plott->start(200);
 
-        if ( !dserv->add(&req, &data) ) {
-            qDebug(redis_category) << "redisDataService add failed";
-            return;
-        }
-    }
-
-    auto end = chrono::high_resolution_clock::now();
-
-    int diff = chrono::duration_cast<chrono::milliseconds>(end-begin).count();
-    qDebug(redis_category) << "redisDataService add" << count_ << "elements time:" << diff << "ms";
 }
 
 MainWindow::~MainWindow()
@@ -57,6 +86,10 @@ MainWindow::~MainWindow()
 
     delete dserv;
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    exit(0);
 }
 
 void MainWindow::on_plotButton_clicked()
@@ -68,8 +101,8 @@ void MainWindow::on_plotButton_clicked()
     tl->setType(0);
     tl->setParseValFunc(&parseFunc);
 
-    int elem_count = 1000;
-    int step = (count_ * 1000 - 0) / elem_count;
+    int elem_count = 50;
+    int step = /*(count_ * 1000 - 0) / elem_count*/ 3 * 1000;
     tel_pair telp = tl->loadVals(0, count_ * 1000, step);
 
     if (telp.first.isEmpty()) {

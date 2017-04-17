@@ -15,9 +15,13 @@ CONFIG += c++11
 
 unix:INCLUDEPATH += /home/zzuummaa/cansat
 SOURCES += /home/zzuummaa/cansat/*.cpp \
-    telemetryloader.cpp
+    telemetryloader.cpp \
+    telemetryplot.cpp \
+    realtimetelemetryloader.cpp
 HEADERS += /home/zzuummaa/cansat/*.h \
-    telemetryloader.h
+    telemetryloader.h \
+    telemetryplot.h \
+    realtimetelemetryloader.h
 SOURCES += /home/zzuummaa/cansat/shm/*.cpp
 HEADERS += /home/zzuummaa/cansat/shm/*.h
 SOURCES += /home/zzuummaa/cansat/ppm2bmp/*.cpp
@@ -27,9 +31,9 @@ unix:LIBS += -L/usr/lib -lredis3m
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    qcustomplot.cpp \
+        qcustomplot.cpp \
 
 HEADERS  += mainwindow.h \
-    qcustomplot.h \
+            qcustomplot.h \
 
 FORMS    += mainwindow.ui
