@@ -14,9 +14,8 @@ void telemetry::addField(string fieldName, double val)
     (*telm)[fieldName] = val;
 }
 
-telemetry::telemetry(int telType, char *tel_struct)
-{
-    telm = new map<string, double>();
+bool telemetry::fromStruct(int type, const char *tel_struct) {
+    telm->clear();
 
     tel_camera* tc;
     tel_termo* tt;
@@ -41,8 +40,23 @@ telemetry::telemetry(int telType, char *tel_struct)
         break;
 
     default:
-        cerr << TITLE << "initializeTelemetry: Unknown telemetry type" << endl;
-        exit(1);
+        return false;
+    }
+
+    return true;
+}
+
+telemetry::telemetry(int telType, char *tel_struct)
+{
+    telm = new map<string, double>();
+
+    this->telType = telType;
+
+    if (tel_struct == NULL) {
+        char buff[64];
+        fromStruct(telType, buff);
+    } else {
+        fromStruct(telType, tel_struct);
     }
 }
 

@@ -57,9 +57,9 @@ tel_pair realTimeTelemetryLoader::retreive()
     return tp;
 }
 
-void realTimeTelemetryLoader::setParseValFunc(parseValFunc newpvFunc)
+void realTimeTelemetryLoader::setParseValClass(parseValClass* newpvClass)
 {
-    telemetryLoader::setParseValFunc(newpvFunc);
+    telemetryLoader::setParseValClass(newpvClass);
 }
 
 void realTimeTelemetryLoader::process()
@@ -88,13 +88,13 @@ void realTimeTelemetryLoader::process()
 
         double val;
 
-        if (pvFunc == NULL) {
+        if (pvClass == NULL) {
             qDebug(telloader_category) << "ParseValueFunct is NULL";
             exit(1);
         }
 
         string tmp(resp.data, resp.dataSize);
-        pvFunc(&tmp, &val, resp.ms + resp.sec * 1000);
+        pvClass->parse(&tmp, &val, resp.ms + resp.sec * 1000);
 
         qDebug(telloader_category) << "New data is comming!";
 

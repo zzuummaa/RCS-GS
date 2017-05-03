@@ -18,12 +18,14 @@ SOURCES += /home/zzuummaa/cansat/*.cpp \
     telemetryloader.cpp \
     telemetryplot.cpp \
     realtimetelemetryloader.cpp \
-    telemetry.cpp
+    telemetry.cpp \
+    telemetryparser.cpp
 HEADERS += /home/zzuummaa/cansat/*.h \
     telemetryloader.h \
     telemetryplot.h \
     realtimetelemetryloader.h \
-    telemetry.h
+    telemetry.h \
+    telemetryparser.h
 SOURCES += /home/zzuummaa/cansat/shm/*.cpp
 HEADERS += /home/zzuummaa/cansat/shm/*.h
 SOURCES += /home/zzuummaa/cansat/ppm2bmp/*.cpp

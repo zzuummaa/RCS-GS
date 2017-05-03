@@ -16,7 +16,7 @@ public:
     void start();
     tel_pair retreive();
 
-    void setParseValFunc(parseValFunc newpvFunc);
+    void setParseValClass(parseValClass *newpvClass);
 
     void setType(int type) {telemetryLoader::setType(type);}
     int getExecTime() {return telemetryLoader::getExecTime();}

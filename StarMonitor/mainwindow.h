@@ -7,6 +7,7 @@
 #include "telemetryplot.h"
 #include "shm/redis.h"
 #include "realtimetelemetryloader.h"
+#include "telemetryparser.h"
 #include "telemetry.h"
 
 namespace Ui {
@@ -27,9 +28,9 @@ private slots:
     void on_plotButton_clicked();
     void repaintGraph();
 
-    void on_comboBox_currentIndexChanged(int index);
-
     void on_startButton_clicked();
+
+    void on_typesComboBox_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;
@@ -45,7 +46,8 @@ private:
 
     bool isInitedMainWindow;
 
-    void fillingListWidget();
+    void fillingTypesWidget();
+    void fillingFieldsWidget(int type);
 signals:
     void resizeEvent ( QResizeEvent * e);
 };

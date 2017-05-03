@@ -8,9 +8,9 @@ const int DATA_SIZE = 100;
 
 telemetryLoader::telemetryLoader(redisDataService* dserv)
 {
+    this->pvClass = NULL;
     this->dserv = dserv;
     this->lvFunc = NULL;
-    this->pvFunc = NULL;
     this->type = 0;
 
     int cur_sec, cur_ms;
@@ -34,12 +34,12 @@ bool telemetryLoader::loadVal(long timeMS, int h, double *val) {
         return false;
     }
 
-    if (pvFunc == NULL) {
+    if (pvClass == NULL) {
         cerr << "telemetryLoader: parseValueFunction is NULL" << endl;
         exit(1);
     }
 
-    if ( !pvFunc(&data, val, req.ms + req.sec * 1000) ) {
+    if ( !pvClass->parse(&data, val, req.ms + req.sec * 1000) ) {
         return false;
     }
 
@@ -66,8 +66,12 @@ void telemetryLoader::setLoadValFunc(loadValFunc newlvFunc) {
     lvFunc = newlvFunc;
 }
 
-void telemetryLoader::setParseValFunc(parseValFunc newpvFunc) {
-    pvFunc = newpvFunc;
+void telemetryLoader::setParseValClass(parseValClass* newpvClass) {
+    if (pvClass != NULL) {
+        delete pvClass;
+    }
+
+    pvClass = newpvClass;
 }
 
 tel_pair telemetryLoader::retreive()

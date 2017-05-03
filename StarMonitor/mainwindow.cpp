@@ -10,7 +10,7 @@
 QLoggingCategory redis_category("Redis client");
 QLoggingCategory comboBox_category("ComboBox");
 
-bool parseFunc(string* data, double* outVal, int ms) {
+bool parseFunc(int type, string* data, double* outVal, int ms) {
     *outVal = atoi(data->c_str());
     return true;
 }
@@ -52,11 +52,26 @@ bool filling_db(redisDataService* dserv) {
     return true;
 }
 
-void MainWindow::fillingListWidget() {
-    QComboBox* cb = ui->comboBox;
+void MainWindow::fillingTypesWidget() {
+    QComboBox* cb = ui->typesComboBox;
 
     cb->addItem("Termo", QVariant(TYPE_TERMO));
     cb->addItem("Barometer", QVariant(TYPE_BAROMETER));
+}
+
+void MainWindow::fillingFieldsWidget(int type)
+{
+    QComboBox* cb = ui->fieldsComboBox;
+    cb->clear();
+
+    telemetry* tel = new telemetry(type);
+    map<string, double>* m = tel->asMap();
+
+    for (map<string, double>::iterator it=m->begin(); it!=m->end(); ++it) {
+        cb->addItem(it->first.c_str());
+    }
+
+    delete tel;
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -67,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     isInitedMainWindow = false;
 
-    fillingListWidget();
+    fillingTypesWidget();
 
     dserv = new redisDataService();
 
@@ -83,10 +98,10 @@ MainWindow::MainWindow(QWidget *parent) :
     }*/
 
     //Test telemetryLoader
-    telemetryLoader* tm = new telemetryLoader(dserv);
-    tm->setParseValFunc(&parseFunc);
+    /*telemetryLoader* tm = new telemetryLoader(dserv);
+    tm->setParseValClass(new telemetryParser());
     tm->setType(4);
-    tel_pair tp = tm->retreive();
+    tel_pair tp = tm->retreive();*/
 
     isInitedMainWindow = true;
 }
@@ -110,7 +125,7 @@ void MainWindow::on_plotButton_clicked()
 
     telemetryLoader* tl = new telemetryLoader(dserv);
     tl->setType(0);
-    tl->setParseValFunc(&parseFunc);
+    //tl->setParseValFunc(&parseFunc);
 
     int elem_count = 50;
     int step = /*(count_ * 1000 - 0) / elem_count*/ 3 * 1000;
@@ -186,8 +201,11 @@ void MainWindow::on_plotButton_clicked()
     qDebug(redis_category) << "Ploted " << x.size() << " elements. Waisted time:" << diff << "ms";
 }
 
-void MainWindow::on_comboBox_currentIndexChanged(int index)
+void MainWindow::on_typesComboBox_currentIndexChanged(int index)
 {
+    int type = ui->typesComboBox->itemData(index).toInt();
+    fillingFieldsWidget(type);
+
     /*if (!isInitedMainWindow) return;
 
     int type = ui->comboBox->itemData(index).toInt();
@@ -215,12 +233,20 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
 
 void MainWindow::on_startButton_clicked()
 {
-    ui->comboBox->setEnabled(false);
+    ui->typesComboBox->setEnabled(false);
+    ui->fieldsComboBox->setEnabled(false);
     ui->startButton->setEnabled(false);
 
+    int type = ui->typesComboBox->currentData().toInt();
+    string field = ui->fieldsComboBox->currentText().toStdString();
+
     rtLoader = new realTimeTelemetryLoader(dserv);
-    rtLoader->setType(ui->comboBox->currentData().toInt());
-    rtLoader->setParseValFunc(&parseFunc);
+    rtLoader->setType(type);
+
+    telemetryParser* pvClass = new telemetryParser(type);
+    pvClass->setField(field);
+
+    rtLoader->setParseValClass(pvClass);
     rtLoader->start();
 
     plott = new telemetryPlot(this, ui->plot);
