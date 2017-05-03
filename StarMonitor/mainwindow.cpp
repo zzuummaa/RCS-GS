@@ -8,6 +8,7 @@
 #define count_ 100
 
 QLoggingCategory redis_category("Redis client");
+QLoggingCategory comboBox_category("ComboBox");
 
 bool parseFunc(string* data, double* outVal, int ms) {
     *outVal = atoi(data->c_str());
@@ -51,11 +52,22 @@ bool filling_db(redisDataService* dserv) {
     return true;
 }
 
+void MainWindow::fillingListWidget() {
+    QComboBox* cb = ui->comboBox;
+
+    cb->addItem("Termo", QVariant(TYPE_TERMO));
+    cb->addItem("Barometer", QVariant(TYPE_BAROMETER));
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    isInitedMainWindow = false;
+
+    fillingListWidget();
 
     dserv = new redisDataService();
 
@@ -70,14 +82,13 @@ MainWindow::MainWindow(QWidget *parent) :
         exit(1);
     }*/
 
-    rtLoader = new realTimeTelemetryLoader(dserv);
-    rtLoader->setParseValFunc(&parseFunc);
-    rtLoader->start();
+    //Test telemetryLoader
+    telemetryLoader* tm = new telemetryLoader(dserv);
+    tm->setParseValFunc(&parseFunc);
+    tm->setType(4);
+    tel_pair tp = tm->retreive();
 
-    plott = new telemetryPlot(this, ui->plot);
-    plott->setTelemetryLoader(rtLoader);
-    plott->start(200);
-
+    isInitedMainWindow = true;
 }
 
 MainWindow::~MainWindow()
@@ -173,4 +184,46 @@ void MainWindow::on_plotButton_clicked()
 
     diff = chrono::duration_cast<chrono::milliseconds>(end-begin).count();
     qDebug(redis_category) << "Ploted " << x.size() << " elements. Waisted time:" << diff << "ms";
+}
+
+void MainWindow::on_comboBox_currentIndexChanged(int index)
+{
+    /*if (!isInitedMainWindow) return;
+
+    int type = ui->comboBox->itemData(index).toInt();
+
+    qDebug(comboBox_category) << "on_currentIndexChanged: index =" << index << "type =" << type;
+
+    plott->pause();
+
+    telemetryLoader* oldLoader = plott->getTelemetryLoader();
+    telemetryLoader* tmpLoader = new telemetryLoader(oldLoader->getDataService());
+    oldLoader->setType(type);
+    tmpLoader->setType(type);
+    tmpLoader->setExecTime(oldLoader->getExecTime());
+    tmpLoader->setParseValFunc(&parseFunc);
+
+
+    plott->setTelemetryLoader(tmpLoader);
+    plott->repaintGraph();
+    plott->setTelemetryLoader(oldLoader);
+
+    delete tmpLoader;
+
+    plott->start();*/
+}
+
+void MainWindow::on_startButton_clicked()
+{
+    ui->comboBox->setEnabled(false);
+    ui->startButton->setEnabled(false);
+
+    rtLoader = new realTimeTelemetryLoader(dserv);
+    rtLoader->setType(ui->comboBox->currentData().toInt());
+    rtLoader->setParseValFunc(&parseFunc);
+    rtLoader->start();
+
+    plott = new telemetryPlot(this, ui->plot);
+    plott->setTelemetryLoader((telemetryLoader*)rtLoader);
+    plott->start(200);
 }

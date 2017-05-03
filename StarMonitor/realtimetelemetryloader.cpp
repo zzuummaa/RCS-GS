@@ -64,19 +64,18 @@ void realTimeTelemetryLoader::setParseValFunc(parseValFunc newpvFunc)
 
 void realTimeTelemetryLoader::process()
 {
-    int cur_sec, cur_ms;
-    int last_sec, last_ms;
+    char buff[100];
     resp_s last_resp;
+    resp_s resp;
+    resp.data = buff;
 
-    getCurTime(&cur_sec, &cur_ms);
-    while (1) {
+    while ( !dserv->getLast_(type, &resp) ) {
         QThread::msleep(250);
+    }
+    last_resp = resp;
 
-        char buff[100];
-        resp_s resp;
-        resp.data = buff;
-
-        if ( !dserv->getLast_(0, &resp) ) {
+    while (1) {
+        if ( !dserv->getLast_(type, &resp) ) {
             continue;
         }
 
@@ -101,11 +100,11 @@ void realTimeTelemetryLoader::process()
 
         mutex.lock();
 
-        static int offset = -1492390039;
-        telp->first.push_back(resp.sec + offset);
-        telp->second.push_back(val + offset);
+        telp->first.push_back(resp.sec - exec_time_sec);
+        telp->second.push_back(val);
 
         mutex.unlock();
 
+        QThread::msleep(250);
     }
 }

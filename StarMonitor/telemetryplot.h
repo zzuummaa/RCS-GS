@@ -12,8 +12,12 @@ public:
     telemetryPlot(QWidget* parent, QCustomPlot* plot);
     ~telemetryPlot();
 
+    void start();
     void start(int ms);
-    void setTelemetryLoader(realTimeTelemetryLoader* telloader);
+    void pause();
+
+    void setTelemetryLoader(telemetryLoader* telloader);
+    telemetryLoader* getTelemetryLoader();
 
 public slots:
     void repaintGraph();
@@ -21,9 +25,10 @@ public slots:
 private:
     QCustomPlot* plot;
     QTimer* animationTimer;
-    realTimeTelemetryLoader* telloader;
+    telemetryLoader* telloader;
 
     int i;
+    int start_ms;
 
     QVector<double> x;
     QVector<double> y;

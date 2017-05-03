@@ -7,7 +7,7 @@
 using namespace std;
 
 typedef pair< QVector<double>, QVector<double> > tel_pair;
-typedef bool (*loadValFunc)(redisDataService* dserv, int timeMS, int h, int* time, double* val);
+typedef bool (*loadValFunc)(redisDataService* dserv, long timeMS, int h, int* time, double* val);
 typedef bool (*parseValFunc)(string* data, double* outVal, int ms);
 
 class telemetryLoader
@@ -17,11 +17,12 @@ protected:
     loadValFunc lvFunc;
     parseValFunc pvFunc;
     int type;
+    int exec_time_sec;
 public:
     telemetryLoader(redisDataService* dserv = 0);
 
-    tel_pair loadVals(int start_time_ms, int end_time_ms, int step);
-    bool loadVal(int timeMS, int h, double* val);
+    tel_pair loadVals(long start_time_ms, long end_time_ms, int step_ms);
+    bool loadVal(long timeMS, int h, double* val);
 
     bool getKey(int time, int h, string* key);
 
@@ -29,6 +30,12 @@ public:
 
     void setLoadValFunc(loadValFunc newlvFunc);
     void setParseValFunc(parseValFunc newpvFunc);
+
+    virtual tel_pair retreive();
+
+    redisDataService* getDataService();
+    int getExecTime() {return exec_time_sec;}
+    void setExecTime(int new_exec_time_sec) {exec_time_sec = new_exec_time_sec;}
 };
 
 #endif // TELEMETRYLOADER_H

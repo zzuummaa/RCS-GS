@@ -7,6 +7,7 @@
 #include "telemetryplot.h"
 #include "shm/redis.h"
 #include "realtimetelemetryloader.h"
+#include "telemetry.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,10 @@ private slots:
     void on_plotButton_clicked();
     void repaintGraph();
 
+    void on_comboBox_currentIndexChanged(int index);
+
+    void on_startButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     redisDataService* dserv;
@@ -38,6 +43,11 @@ private:
 
     realTimeTelemetryLoader* rtLoader;
 
+    bool isInitedMainWindow;
+
+    void fillingListWidget();
+signals:
+    void resizeEvent ( QResizeEvent * e);
 };
 
 #endif // MAINWINDOW_H

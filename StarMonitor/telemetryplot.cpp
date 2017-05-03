@@ -20,9 +20,18 @@ void telemetryPlot::repaintGraph() {
         exit(1);
     }
 
-    if (x.isEmpty()) return;
+    plot->graph(0)->data().clear();
+
+    if (x.isEmpty()) {
+        plot->replot();
+        return;
+    }
+
+    plot->graph(0)->setPen(QPen(Qt::blue));
+    plot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
 
     plot->graph(0)->setData(x, y);
+
     //end of playback check
     if(x.size() > 100) animationTimer->stop();
     //
@@ -59,12 +68,26 @@ telemetryPlot::~telemetryPlot() {
     delete animationTimer;
 }
 
+void telemetryPlot::start() {
+    animationTimer->start(start_ms);
+}
+
 void telemetryPlot::start(int ms)
 {
+    start_ms = ms;
     animationTimer->start(ms);
 }
 
-void telemetryPlot::setTelemetryLoader(realTimeTelemetryLoader *telloader)
+void telemetryPlot::pause() {
+    animationTimer->stop();
+}
+
+void telemetryPlot::setTelemetryLoader(telemetryLoader *telloader)
 {
     this->telloader = telloader;
+}
+
+telemetryLoader *telemetryPlot::getTelemetryLoader()
+{
+    return telloader;
 }

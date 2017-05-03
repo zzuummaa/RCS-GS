@@ -17,11 +17,13 @@ unix:INCLUDEPATH += /home/zzuummaa/cansat
 SOURCES += /home/zzuummaa/cansat/*.cpp \
     telemetryloader.cpp \
     telemetryplot.cpp \
-    realtimetelemetryloader.cpp
+    realtimetelemetryloader.cpp \
+    telemetry.cpp
 HEADERS += /home/zzuummaa/cansat/*.h \
     telemetryloader.h \
     telemetryplot.h \
-    realtimetelemetryloader.h
+    realtimetelemetryloader.h \
+    telemetry.h
 SOURCES += /home/zzuummaa/cansat/shm/*.cpp
 HEADERS += /home/zzuummaa/cansat/shm/*.h
 SOURCES += /home/zzuummaa/cansat/ppm2bmp/*.cpp
